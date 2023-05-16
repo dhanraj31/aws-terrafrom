@@ -1,0 +1,56 @@
+provider "aws" {
+  region     = "us-east-1"
+  access_key = "AKIA2RMQWVZ7N7GYDWKG"
+  secret_key = "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"
+}
+
+resource "aws_instance" "test" {
+  ami           = "data.ami.ubuntu"
+  instance_type = var.instance_type
+ # key_name = dsp.pem
+  vpc_security_group_ids  = [aws_security_group.main.id]
+  tags = {
+    Name = var.instance_name
+  }
+
+  connection {
+    type     = "ssh"
+    user     = "ubuntu"
+    private_key = file("./dsp.pem")
+    host     = self.public_ip
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt install nginx -y",
+      "sudo service nginx restart",
+    ]
+  }
+}
+  #tags = {
+   # Name = var.instance_name
+ # }
+
+resource "aws_key_pair" "login" {
+  key_name   = "id_rsa.pub"
+  public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDJni+rNASvrnzYKvC5oCMgE7b/3Y5135U1GBfKiu+8us3kHnbOOOKti6PazPJALY5IkIF/WVusIHsotXrxnTmU6RS4Si3OH9V+bG8sCvpdExQw9auguTdiUNE2rocVwbS9rQfbTXZzm59kZfPzB2b0EckhN9NEBmv4CzBKtBqAezfQUcFSIVWx8l1eLi/Cx9Nh8Nm03JsODzA5gFnOV+PmdzAgQPhFLN1+F8yEUsaxn3es4N+Fku0laytnNjpVj5b/6yCpou5Bro9HHLd/Hj2XodTVsmfvwHUHDrdORf+q72m2+2U8SntQHr+M3huDU7/DfCMVZtFec+DOi33RkbGJ root@LAPTOP-T8KIT567"
+}
+resource "aws_eip" "eip_assoc" {
+  instance = aws_instance.test.id
+
+}
+resource "aws_security_group" "main"{
+  name = "var.tf.vars"
+  ingress {
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+}
+  egress {
+    from_port = 22
+    to_port = 22
+    protocol = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+}
+}

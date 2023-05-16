@@ -1,0 +1,13 @@
+output "EC2" {
+  description = "EC2 Instance Public IP"
+  value       = aws_instance.test.public_ip
+}
+
+output "instance_publicdns" {
+  description = "EC2 Instance Public DNS"
+  value       = aws_instance.test.public_dns
+}
+
+output "ami_id" {
+  value = data.aws_ami.ubuntu
+}
